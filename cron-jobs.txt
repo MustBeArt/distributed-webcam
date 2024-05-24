@@ -1,0 +1,3 @@
+0 * * * * /home/kb5mu/webcam/webcam.sh
+20 * * * * /home/kb5mu/webcam/webcam.sh
+40 * * * * /home/kb5mu/webcam/webcam.sh
