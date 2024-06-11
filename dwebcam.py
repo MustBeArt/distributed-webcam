@@ -92,7 +92,7 @@ def process_uploaded_file(upfile_name, upfile_values):
 		sys.exit()
 
 	# Third step is to add text to the composited image.
-	status = os.system('mogrify -quality 50 -font Helvetica -pointsize 24 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (text, name_small))
+	status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 22 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (text, name_small))
 	if status:
 		print "Failed to run mogrify"
 		sys.exit()
@@ -103,7 +103,7 @@ def process_uploaded_file(upfile_name, upfile_values):
 		if temp[0] == 'N':
 			temp = str(-int(temp[1:]))		# N12 => -12
 		temp = temp + '\xb0F'
-		status = os.system('mogrify -quality 50 -font Helvetica -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, name_small))
+		status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, name_small))
 		if status:
 			print "Failed to run mogrify"
 			sys.exit()
@@ -128,7 +128,7 @@ def process_uploaded_file(upfile_name, upfile_values):
 		sys.exit()
 
 	# Third step is to add text to the composited image.
-	status = os.system('mogrify -quality 50 -font Helvetica -pointsize 10 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (thumb_text, name_thumb))
+	status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 10 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (thumb_text, name_thumb))
 	if status:
 		print "Failed to run mogrify"
 		sys.exit()
@@ -150,14 +150,14 @@ def process_uploaded_file(upfile_name, upfile_values):
 		sys.exit()
 
 	# Second step is to add text to the composited image.
-	status = os.system('convert -quality 75 -font Helvetica -pointsize 24 -fill white -undercolor black -gravity South -annotate 0 "%s" tmp1600.png %s' % (text, upfile_name))
+	status = os.system('convert -quality 75 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity South -annotate 0 "%s" tmp1600.png %s' % (text, upfile_name))
 	if status:
 		print "Failed to run convert"
 		sys.exit()
 	
 	# Optional third step: add the temperature if it's available.
 	if temp:
-		status = os.system('mogrify -quality 50 -font Helvetica -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, upfile_name))
+		status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, upfile_name))
 		if status:
 			print "Failed to run mogrify"
 			sys.exit()
