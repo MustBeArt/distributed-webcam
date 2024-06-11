@@ -20,11 +20,15 @@
 #
 
 import os
+from os import environ
 import time
 import urllib.request, urllib.parse, urllib.error
 import glob
 import sys
+import requests
+from dotenv import load_dotenv
 
+load_dotenv()
 
 camcode = "fm"		# Fern Meadow
 # camcode = "xx"			# test configuration
@@ -32,13 +36,15 @@ CGI_URL = "https://www.mustbeart.com/cgi-bin/dwebcam.py?cam=%s" % camcode
 
 camera_port = "/dev/ttyUSB0"
 
-host = "radiant.dreamhost.com"
+host = "mustbeart.com"
 # port = 64050                     # default for SSH is 22
 user = "paul_mba"
 upload_dir = "/home/paul_mba/mustbeart.com/webcam/upload/"
 archive_dirname = "archive/"
 
 APRS_path = "/var/wxreport.txt"
+
+wx_name = "Fern Meadow"
 
 #============ End of Configuration ====================================
 
@@ -67,13 +73,29 @@ def get_APRS_temp():
                 
         return int(aprsdata[12:15])
 	
+def get_ambient_weather_temp():
+    wx_url = f"{environ['AMBIENT_ENDPOINT']}/devices?applicationKey={environ['AMBIENT_APPLICATION_KEY']}&apiKey={environ['AMBIENT_API_KEY']}"
+
+    r = requests.get(wx_url)
+    if r.status_code != 200:
+        print(f"Received status code {r.status_code}")
+        return None
+    else:
+        devices = r.json()
+        for device in devices:
+            wx_age = time.mktime(time.gmtime()) - 3600 - \
+                     time.mktime(time.strptime(device['lastData']['date'], '%Y-%m-%dT%H:%M:%S.000Z'))
+            wx_station_name = device['info']['name']
+            if wx_age <= 300 and wx_station_name == wx_name: 
+                return device['lastData']['tempf']
+        return None
 
 if time.localtime().tm_isdst:
         tz = "PDT"
 else:
         tz = "PST"
 
-t = get_APRS_temp()
+t = get_APRS_temp() or get_ambient_weather_temp()
 if not t:
         temp = ""
 elif t < 0:
