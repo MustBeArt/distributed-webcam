@@ -27,10 +27,14 @@ by the `photopc` application for Linux. The script `cp950dwc.py` invokes
 Because my camera was located on Palomar Mountain in mostly-coastal
 San Diego County, California, the temperature at the camera site was
 of special interest. `cp950dwc.py` includes code to pick up the
-temperature from a file written frequently by weather station software
-for APRS purposes. The script embeds the temperature, if available,
-in the image filename. The CGI script converts this to embedded text
-on the face of the image.
+temperature from a local weather station. The script embeds the
+temperature, if available, in the image filename. The CGI script converts
+this to embedded text on the face of the image. Two types of weather
+station are supported. The original type writes a local file for APRS
+purposes, and `cp950dwc.py` reads that file. The newer type stores
+weather information on a cloud server, and `cp950dwc.py` uses the
+Ambient Weather API to fetch the latest readings. In both cases, the
+weather info is ignored if it is not available and fresh.
 
 The original installation used a Starband satellite connection, where
 servers and streaming were technically against the terms of service,
