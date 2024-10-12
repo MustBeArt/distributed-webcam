@@ -1,8 +1,9 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 # distributed webcam processor CGI
 # 2009-01-28 kb5mu
 # 2024-02-15 kb5mu modified for Dreamhost hosting
+# 2024-10-11 kb5mu converted to Python3 with 2to3 
 #
 # Remote webcam is expected to upload JPEG files with filenames like
 #     fm-2009-01-28-21-40-PST.jpg
@@ -52,7 +53,7 @@ caption = {	'fm': 'Palomar Mountain',
 # infrastructure processing. So, no need to make pretty HTML output.
 # Easier to just output text for trace/debug purposes.
 #
-print "Content-Type: text/plain\n"
+print("Content-Type: text/plain\n")
 
 #
 # We have a file uploaded, do everything required.
@@ -77,24 +78,24 @@ def process_uploaded_file(upfile_name, upfile_values):
 	# This step ought to be combinable with the second step, but there seems
 	# to be a bug in the -size parameter of the composite command that prevents
 	# that from working correctly.
-	print "  Building 640-pixel image ..."
+	print("  Building 640-pixel image ...")
 	name_small = upfile_basename + "-small.jpg"
 	status = os.system("/usr/bin/convert %s -resize 640x480 -unsharp 0 tmp640.png" % (upload_directory + '/' + upfile_name))
 	if status:
-		print "Failed to run convert"
+		print("Failed to run convert")
 		sys.exit()
 	
 	# Second step is to composite the temp file on top of a template that
 	# contains a logo and room for text annotation outside the image area.
 	status = os.system("composite -gravity North tmp640.png %s %s" % (template_directory + '/' + upfile_values['cam'] + '/' + '640titled.png', name_small))
 	if status:
-		print "Failed to run composite"
+		print("Failed to run composite")
 		sys.exit()
 
 	# Third step is to add text to the composited image.
 	status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 22 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (text, name_small))
 	if status:
-		print "Failed to run mogrify"
+		print("Failed to run mogrify")
 		sys.exit()
 	
 	# Optional fourth step: add the temperature if it's available.
@@ -105,7 +106,7 @@ def process_uploaded_file(upfile_name, upfile_values):
 		temp = temp + '\xb0F'
 		status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, name_small))
 		if status:
-			print "Failed to run mogrify"
+			print("Failed to run mogrify")
 			sys.exit()
 		
 	# Use ImageMagick, again in three steps, to create a thumbnail version.
@@ -113,53 +114,53 @@ def process_uploaded_file(upfile_name, upfile_values):
 	# This step ought to be combinable with the second step, but there seems
 	# to be a bug in the -size parameter of the composite command that prevents
 	# that from working correctly.
-	print "  Building thumbnail ..."
+	print("  Building thumbnail ...")
 	name_thumb = upfile_basename + "-thumb.jpg"
 	status = os.system("/usr/bin/convert %s -resize 80x60 -unsharp 0 tmp80.png" % (upload_directory + '/' + upfile_name))
 	if status:
-		print "Failed to run convert"
+		print("Failed to run convert")
 		sys.exit()
 
 	# Second step is to composite the temp file on top of a template that
 	# contains a logo and room for text annotation outside the image area.
 	status = os.system("composite -gravity North tmp80.png %s %s" % (template_directory + '/' + upfile_values['cam'] + '/' + '80titled.png', name_thumb))
 	if status:
-		print "Failed to run composite"
+		print("Failed to run composite")
 		sys.exit()
 
 	# Third step is to add text to the composited image.
 	status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 10 -fill white -undercolor black -gravity South -annotate 0 "%s" %s' % (thumb_text, name_thumb))
 	if status:
-		print "Failed to run mogrify"
+		print("Failed to run mogrify")
 		sys.exit()
 
 	# Trim off all the metadata, making the thumbnail much smaller
 	status = os.system('jhead -purejpg %s' % name_thumb)
 	if status:
-		print "Failed to run jhead"
+		print("Failed to run jhead")
 		sys.exit()
 		
 	
 	# use ImageMagick again to make a captioned version of the original image.
 	# To put the caption outside the image area, we again have to composite the
 	# image with a mostly-blank template of the right size, then add the caption.
-	print "  Captioning camera image ..."
+	print("  Captioning camera image ...")
 	status = os.system("composite -gravity North %s %s tmp1600.png" % (upload_directory + '/' + upfile_name, template_directory + '/' + upfile_values['cam'] + '/' + '1600titled.png'))
 	if status:
-		print "Failed to run composite"
+		print("Failed to run composite")
 		sys.exit()
 
 	# Second step is to add text to the composited image.
 	status = os.system('convert -quality 75 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity South -annotate 0 "%s" tmp1600.png %s' % (text, upfile_name))
 	if status:
-		print "Failed to run convert"
+		print("Failed to run convert")
 		sys.exit()
 	
 	# Optional third step: add the temperature if it's available.
 	if temp:
 		status = os.system('mogrify -quality 50 -font DejaVu-Sans -pointsize 24 -fill white -undercolor black -gravity SouthEast -annotate 0 "%s" %s' % (temp, upfile_name))
 		if status:
-			print "Failed to run mogrify"
+			print("Failed to run mogrify")
 			sys.exit()
 	
 
@@ -175,7 +176,7 @@ def process_uploaded_file(upfile_name, upfile_values):
 	os.remove('tmp80.png')
 	os.rmdir(scratch_dirname)
 	
-	print "  finished."
+	print("  finished.")
 
 
 #=========================  MAIN PROGRAM  ==================================
@@ -187,15 +188,15 @@ def process_uploaded_file(upfile_name, upfile_values):
 # files from other webcams.
 #
 form = cgi.FieldStorage()
-if form.has_key('cam'):
+if 'cam' in form:
 	thiscam = (form['cam'].value + '~~')[0:2];	# make sure it's two chars long	
-	if caption.has_key(thiscam):
-		print caption[thiscam]
+	if thiscam in caption:
+		print(caption[thiscam])
 	else:
-		print "Unknown cam code %s provided!" % thiscam
+		print("Unknown cam code %s provided!" % thiscam)
 		sys.exit()
 else:
-	print "No cam code provided!"
+	print("No cam code provided!")
 	sys.exit()
 
 #
@@ -231,11 +232,11 @@ for name in upfiles:
 		# there may be files with improper names
 		m = filename_re.match(name)
 		if m:
-			print "Processing " + name
+			print("Processing " + name)
 			process_uploaded_file(name, m.groupdict())
 			os.remove(path)
 		else:
-			print "Ignoring bogus file: " + name
+			print("Ignoring bogus file: " + name)
 			
 
 # Now that we've processed the new file(s), go into the corresponding cam's
@@ -245,10 +246,10 @@ for name in upfiles:
 os.chdir(webcam_directory + '/' + thiscam + '/images')
 camfiles = os.listdir('.')
 if not camfiles:
-	print "No images to summarize!"
+	print("No images to summarize!")
 	sys.exit()
 latest = max(camfiles)			# this gets the original filename and not -small or -thumb
-print "Latest image file is %s" % latest
+print("Latest image file is %s" % latest)
 shutil.copy(latest, "../latest.jpg")		# copy latest files
 shutil.copy(latest[0:-4] + "-small.jpg", "../latest-small.jpg")
 
@@ -270,14 +271,14 @@ for name in camfiles:
 		values = m.groupdict()
 		dt = datetime.datetime(int(values['year']), int(values['month']), int(values['day']), int(values['hour']), int(values['minute']))
 		if latest_dt - dt >= keep_duration:
-			print "Removing old image %s" % name
+			print("Removing old image %s" % name)
 			os.remove(name)
 			os.remove(name[0:-4] + "-small.jpg")
 			os.remove(name[0:-4] + "-thumb.jpg")
 		else:
 			count = count + 1
 
-print "Creating index and animation files for %d images." % count
+print("Creating index and animation files for %d images." % count)
 
 #
 # Pass through the reduced list of remaining files in the images directory,
@@ -297,9 +298,9 @@ webcam24.writelines(lines)
 header.close()
 
 # Create the file header for imageinit.js
-print >> imageinit, 'var imax=%d;' % count
-print >> imageinit, 'image_files = new Array(imax);'
-print >> imageinit, 'night = new Array(imax);'
+print('var imax=%d;' % count, file=imageinit)
+print('image_files = new Array(imax);', file=imageinit)
+print('night = new Array(imax);', file=imageinit)
 
 # process each file.
 for name in camfiles:
@@ -311,9 +312,9 @@ for name in camfiles:
 			night = 0
 		else:
 			night = 1
-		print >> webcam24, '<A HREF="images/%s-small.jpg"><IMG SRC="images/%s-thumb.jpg" HEIGHT=73 WIDTH=80 ALT="%s:%s" BORDER=0></A>&nbsp;' % (name[0:-4], name[0:-4], values['hour'], values['minute'])
-		print >> imageinit, 'image_files[%d]="images/%s-small.jpg";' % (i, name[0:-4])
-		print >> imageinit, 'night[%d]=%d;' % (i, night)
+		print('<A HREF="images/%s-small.jpg"><IMG SRC="images/%s-thumb.jpg" HEIGHT=73 WIDTH=80 ALT="%s:%s" BORDER=0></A>&nbsp;' % (name[0:-4], name[0:-4], values['hour'], values['minute']), file=webcam24)
+		print('image_files[%d]="images/%s-small.jpg";' % (i, name[0:-4]), file=imageinit)
+		print('night[%d]=%d;' % (i, night), file=imageinit)
 		i = i + 1
 
 # Copy the file footer to webcam24.html
@@ -326,6 +327,6 @@ webcam24.close()
 # Wrap up imageinit.js too
 imageinit.close()
 
-print "Finished!"
+print("Finished!")
 
 

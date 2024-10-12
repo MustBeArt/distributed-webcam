@@ -46,8 +46,9 @@ were all unreliable to some extent, so it was important that the
 system be able to recover after outages, preferably without loss of
 data.
 
-`cp950dwc.py` requires Python 3, whereas `dwebcam.py` requires Python 2.
-This is just what was convenient at the time on each platform.
+`cp950dwc.py` at the camera site and `dwebcam.py` on the web server
+both require Python 3.
+
 `cron-jobs.txt` contains the lines of text to be supplied to `crontab`
 to set up the periodic image capture job. `webcam.sh` is the shell
 script run by the cron job.
